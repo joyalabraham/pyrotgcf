@@ -8,8 +8,7 @@ from typing import Dict, List, Optional, Union
 from dotenv import load_dotenv
 from pydantic import BaseModel, validator  # pylint: disable=no-name-in-module
 from pymongo import MongoClient
-from telethon import TelegramClient
-from telethon.sessions import StringSession
+from pyrogram import Client
 
 from tgcf import storage as stg
 from tgcf.const import CONFIG_FILE_NAME
@@ -160,12 +159,12 @@ def get_env_var(name: str, optional: bool = False) -> str:
     return var
 
 
-async def get_id(client: TelegramClient, peer):
+async def get_id(client: Client, peer):
     return await client.get_peer_id(peer)
 
 
 async def load_from_to(
-    client: TelegramClient, forwards: List[Forward]
+    client: Client, forwards: List[Forward]
 ) -> Dict[int, List[int]]:
     """Convert a list of Forward objects to a mapping.
 
@@ -200,7 +199,7 @@ async def load_from_to(
     return from_to_dict
 
 
-async def load_admins(client: TelegramClient):
+async def load_admins(client: Client):
     for admin in CONFIG.admins:
         ADMINS.append(await get_id(client, admin))
     logging.info(f"Loaded admins are {ADMINS}")
@@ -210,7 +209,7 @@ async def load_admins(client: TelegramClient):
 def get_SESSION():
     if CONFIG.login.SESSION_STRING and CONFIG.login.user_type == 1:
         logging.info("using session string")
-        SESSION = StringSession(CONFIG.login.SESSION_STRING)
+        SESSION = Client.export_session_string(CONFIG.login.SESSION_STRING)
     elif CONFIG.login.BOT_TOKEN and CONFIG.login.user_type == 0:
         logging.info("using bot account")
         SESSION = "tgcf_bot"
